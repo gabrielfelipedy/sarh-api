@@ -49,8 +49,16 @@ app.get('/', (req, res) => {
     res.send('Welcome to SARH API JS')
 })
 
-app.get('/servidores', async (req, res) => {
-    const query = `SELECT FUNC_PESS_C_P_F from rh_funcionario`
+//region servidores
+
+//obs servidores são apenas as pessoas que são servidores efetivos
+app.get('/servidores', async (req, res) => 
+{
+    const attributes = `FUNC_MATRICULA_FOLHA, FUNC_PESS_C_P_F, NO_SERVIDOR`
+
+    const tables = `rh_funcionario INNER JOIN serv_pessoal ON rh_funcionario.FUNC_MATRICULA_FOLHA = serv_pessoal.NU_MATR_SERVIDOR`
+
+    const query = `SELECT ${attributes} from ${tables} ORDER BY no_servidor`
 
     try {
         const result = await connectToOracle(query)
@@ -62,25 +70,15 @@ app.get('/servidores', async (req, res) => {
     }
 })
 
-//TODO finish to implement this
-// app.get('/servidores/inativos', async (req, res) => {
-//     const query = `SELECT FUNC_PESS_C_P_F from rh_funcionario`
-
-//     try {
-//         const result = await connectToOracle(query)
-//         res.json(result)
-//     }
-//     catch(err)
-//     {
-//         res.status(500).json({ message: 'Erro connecting do database', err})
-//     }
-// })
-
-app.get('/servidores/:FUNC_MATRICULA_FOLHA', async (req, res) => {
-
+app.get('/servidores/:FUNC_MATRICULA_FOLHA', async (req, res) => 
+{
     const FUNC_MATRICULA_FOLHA = req.params.FUNC_MATRICULA_FOLHA
 
-    const query = `SELECT FUNC_PESS_C_P_F, NO_SERVIDOR from rh_funcionario INNER JOIN serv_pessoal ON rh_funcionario.FUNC_MATRICULA_FOLHA = serv_pessoal.NU_MATR_SERVIDOR WHERE func_matricula_folha = '${FUNC_MATRICULA_FOLHA}'`
+    const attributes = `FUNC_MATRICULA_FOLHA, FUNC_PESS_C_P_F, NO_SERVIDOR`
+
+    const tables = `rh_funcionario INNER JOIN serv_pessoal ON rh_funcionario.FUNC_MATRICULA_FOLHA = serv_pessoal.NU_MATR_SERVIDOR`
+
+    const query = `SELECT ${attributes} from ${tables} WHERE func_matricula_folha = '${FUNC_MATRICULA_FOLHA}'`
 
     try {
         const result = await connectToOracle(query)
@@ -92,8 +90,31 @@ app.get('/servidores/:FUNC_MATRICULA_FOLHA', async (req, res) => {
     }
 })
 
+// TODO finish to implement this
+app.get('/servidores/inativos', async (req, res) =>
+{
+    const attributes = `func_sesb_sigla_secao_subsecao, func_matricula_folha, func_e_mail, func_perf_cod_situacao, situ_cod_situacao, situ_dsc_situacao`
+
+    const tables = `rh_funcionario INNER JOIN rh_situacao ON rh_funcionario.func_perf_cod_situacao = rh_situacao.situ_cod_situacao`
+
+    // const query = `SELECT ${attributes} FROM ${tables}`
+    const query = 'SELECT func_sesb_sigla_secao_subsecao, func_matricula_folha, func_e_mail, func_perf_cod_situacao, situ_cod_situacao, situ_dsc_situacao FROM rh_funcionario INNER JOIN rh_situacao ON rh_funcionario.func_perf_cod_situacao = rh_situacao.situ_cod_situacao'
+
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+// region pessoas
+
+//obs pessoas são todas as pessoas que têm vínculo com a Justiça Federal
 app.get('/pessoas', async (req, res) => {
-    const query = `SELECT NOME from rh_relacao_pessoas`
+    const query = `SELECT nome, cpf, matricula, cargo, uf FROM rh_relacao_pessoas ORDER BY nome`
 
     try {
         const result = await connectToOracle(query)
@@ -125,6 +146,8 @@ app.get('/pessoas/:MATRICULA', async (req, res) => {
         res.status(500).json({ message: 'Error connecting do database', err})
     }
 })
+
+//region pensionistas
 
 app.get('/pensionistas', async (req, res) => {
     const query = `SELECT PCIV_NOME_PENSIONISTA from rh_pensao_civil`
