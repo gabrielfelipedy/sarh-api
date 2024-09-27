@@ -70,7 +70,7 @@ app.get('/servidores', async (req, res) =>
     }
 })
 
-app.get('/servidores/:FUNC_MATRICULA_FOLHA', async (req, res) => 
+app.get('/servidor/:FUNC_MATRICULA_FOLHA', async (req, res) => 
 {
     const FUNC_MATRICULA_FOLHA = req.params.FUNC_MATRICULA_FOLHA
 
@@ -90,16 +90,69 @@ app.get('/servidores/:FUNC_MATRICULA_FOLHA', async (req, res) =>
     }
 })
 
-// TODO finish to implement this
+app.get('/servidores/lotacao', async (req, res) =>
+{
+    const attributes = `func_matricula_folha, sg_lotacao, de_lotacao`
+
+    const tables = `rh_funcionario INNER JOIN lotacao ON rh_funcionario.func_lota_cod_lotacao = lotacao.co_lotacao`
+
+    const query = `SELECT ${attributes} FROM ${tables}`
+    
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+app.get('/servidores/situacao', async (req, res) =>
+{
+    const attributes = `func_matricula_folha, situ_cod_situacao, situ_dsc_situacao`
+
+    const tables = `rh_funcionario INNER JOIN rh_situacao ON rh_funcionario.func_perf_cod_situacao = rh_situacao.situ_cod_situacao`
+
+    const query = `SELECT ${attributes} FROM ${tables}`
+    
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+    
+
 app.get('/servidores/inativos', async (req, res) =>
 {
     const attributes = `func_sesb_sigla_secao_subsecao, func_matricula_folha, func_e_mail, func_perf_cod_situacao, situ_cod_situacao, situ_dsc_situacao`
 
     const tables = `rh_funcionario INNER JOIN rh_situacao ON rh_funcionario.func_perf_cod_situacao = rh_situacao.situ_cod_situacao`
 
-    // const query = `SELECT ${attributes} FROM ${tables}`
-    const query = 'SELECT func_sesb_sigla_secao_subsecao, func_matricula_folha, func_e_mail, func_perf_cod_situacao, situ_cod_situacao, situ_dsc_situacao FROM rh_funcionario INNER JOIN rh_situacao ON rh_funcionario.func_perf_cod_situacao = rh_situacao.situ_cod_situacao'
+    const query = `SELECT ${attributes} FROM ${tables} WHERE func_sesb_sigla_secao_subsecao <> 'JU' AND func_sesb_sigla_secao_subsecao <> 'DS' AND SITU_DSC_SITUACAO LIKE '%INATIVO%'`
+    
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
 
+app.get('/servidores/divisao', async (req, res) =>
+{
+    const attributes = `func_matricula_folha, divi_dsc_divisao`
+
+    const tables = `rh_funcionario INNER JOIN rh_divisao ON rh_funcionario.func_perf_cod_divisao = rh_divisao.divi_cod_divisao`
+
+    const query = `SELECT ${attributes} FROM ${tables}`
+    
     try {
         const result = await connectToOracle(query)
         res.json(result)
