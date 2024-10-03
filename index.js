@@ -1,11 +1,14 @@
 const express = require('express')
 const oracledb = require('oracledb')
+const moment = require('moment')
+
 require('dotenv').config();
 
 const app = express()
 const port = 3000
 
 app.use(express.json())
+moment.locale('pt-br'); 
 
 oracledb.initOracleClient({ libDir: process.env.ORACLE_HOME });
 
@@ -129,9 +132,9 @@ app.get('/servidores/situacao', async (req, res) =>
 
 app.get('/servidores/inativos', async (req, res) =>
 {
-    const attributes = `func_sesb_sigla_secao_subsecao, func_matricula_folha, func_e_mail, func_perf_cod_situacao, situ_cod_situacao, situ_dsc_situacao`
+    const attributes = `func_sesb_sigla_secao_subsecao, func_matricula_folha, func_e_mail, func_perf_cod_situacao, situ_cod_situacao, situ_dsc_situacao, user_id, user_nome`
 
-    const tables = `rh_funcionario INNER JOIN rh_situacao ON rh_funcionario.func_perf_cod_situacao = rh_situacao.situ_cod_situacao`
+    const tables = `rh_funcionario INNER JOIN rh_situacao ON rh_funcionario.func_perf_cod_situacao = rh_situacao.situ_cod_situacao INNER JOIN rh_user_id ON rh_funcionario.func_matricula_folha = rh_user_id.user_id`
 
     const query = `SELECT ${attributes} FROM ${tables} WHERE func_sesb_sigla_secao_subsecao <> 'JU' AND func_sesb_sigla_secao_subsecao <> 'DS' AND SITU_DSC_SITUACAO LIKE '%INATIVO%'`
     
@@ -155,6 +158,54 @@ app.get('/servidores/divisao', async (req, res) =>
     
     try {
         const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+const format_date = (date) => {
+    return moment(date).format('MMMM Do YYYY, h:mm:ss a')
+}
+
+const format_ferias = (ferias) => {
+    let retorno = ferias
+
+    retorno.forEach(feria => {
+        feria[1] = format_date(feria[1])
+        feria[3] = format_date(feria[3])
+    });
+
+    return retorno
+}
+
+app.post('/servidores/ferias/', async (req, res) =>
+{
+    const matricula = req.body.matricula
+    const data_inicio = req.body.data_inicio
+    const data_fim = req.body.data_fim
+
+    if(!(matricula && data_inicio && data_fim))
+        return []
+
+    matricula_formated = matricula.substring(2)
+
+    const attributes = "pfer_feri_cod_funcionario, pfer_inicio_periodo, pfer_dias_gozados, pfer_fim_periodo, pfer_data_interrup_suspensao, pfer_flag_ocorrencia" //flag = 7 - suspensas, 1 - marcadas, 2- gozadas, 5 - interrompdias / remarcadas
+
+    const tables = `rh_periodo_ferias`
+
+    const query = `SELECT ${attributes} FROM ${tables} WHERE pfer_feri_cod_funcionario = ${matricula_formated} AND pfer_flag_ocorrencia IN (1, 2, 5, 7) AND ((pfer_inicio_periodo BETWEEN '${data_inicio}' AND '${data_fim}') OR (pfer_fim_periodo BETWEEN '${data_inicio}' AND '${data_fim}'))`
+
+    //AND pfer_inicio_periodo BETWEEN ${data_inicio} AND ${data_fim}
+    
+    try {
+        const result = await connectToOracle(query)
+
+        // console.log(result[0][1])
+        // console.log(data_inicio)
+
         res.json(result)
     }
     catch(err)
