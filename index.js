@@ -214,11 +214,159 @@ app.post('/servidores/ferias/', async (req, res) =>
     }
 })
 
+app.post('/servidores/licencas/', async (req, res) =>
+{
+    const matricula = req.body.matricula
+    const data_inicio = req.body.data_inicio
+    const data_fim = req.body.data_fim
+
+    if(!(matricula && data_inicio && data_fim))
+        return []
+
+    matricula_formated = matricula.substring(2)
+
+    const attributes = "plic_lice_cod_funcionario, plic_inicio_periodo, plic_fim_periodo, lice_num_processo, tiaf_dsc_tipo_afas"
+
+    const tables = `rh_periodo_licenca INNER JOIN rh_licenca ON lice_cod_licenca = plic_lice_cod_licenca INNER JOIN rh_tipo_afastamento ON tiaf_cod_tipo_afas = lice_tiaf_cod_tipo_afas`
+
+    const query = `SELECT ${attributes} FROM ${tables} WHERE plic_lice_cod_funcionario = ${matricula_formated} AND lice_func_cod_funcionario = ${matricula_formated}  AND ((plic_inicio_periodo BETWEEN '${data_inicio}' AND '${data_fim}') OR (plic_fim_periodo BETWEEN '${data_inicio}' AND '${data_fim}'))`
+
+    //AND pfer_inicio_periodo BETWEEN ${data_inicio} AND ${data_fim}
+    
+    try {
+        const result = await connectToOracle(query)
+
+        // console.log(result[0][1])
+        // console.log(data_inicio)
+
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+app.post('/servidores/teletrabalho/', async (req, res) =>
+{
+    const matricula = req.body.matricula
+    const data_inicio = req.body.data_inicio
+    const data_fim = req.body.data_fim
+
+    if(!(matricula && data_inicio && data_fim))
+        return []
+
+    matricula_formated = matricula.substring(2)
+
+    const attributes = "freq_dat_inicio, freq_dat_fim, freq_tipo, freq_observacao"
+
+    const tables = `rh_frequencia_especial`
+
+    const query = `SELECT ${attributes} FROM ${tables} WHERE freq_func_cod_funcionario = ${matricula_formated}`
+
+    //AND pfer_inicio_periodo BETWEEN ${data_inicio} AND ${data_fim}
+    
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+//region LOTAÇÃO
+
+app.post('/lotacao/', async (req, res) =>
+{
+    const codigo_lotacao = req.body.codigo_lotacao
+
+    const attributes = "lota_cod_lotacao, lota_lota_cod_lotacao_pai, lota_dsc_lotacao, lota_sigla_lotacao"
+
+    const tables = `rh_lotacao`
+
+    const query = `SELECT ${attributes} FROM ${tables} WHERE lota_cod_lotacao = ${codigo_lotacao}`
+    
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+app.post('/lotacao/pai', async (req, res) =>
+{
+    const codigo_lotacao = req.body.codigo_lotacao
+
+    const attributes = "lota_cod_lotacao, lota_lota_cod_lotacao_pai, lota_dsc_lotacao, lota_sigla_lotacao"
+
+    const tables = `rh_lotacao`
+
+    const query = `SELECT ${attributes} FROM ${tables} WHERE lota_cod_lotacao = ${codigo_lotacao}`
+    
+    try {
+        const temp_result = await connectToOracle(query)
+        
+        const codigo_pai = temp_result[0][1]
+        //console.log(codigo_pai)
+
+        try {
+            const result = await connectToOracle(`SELECT ${attributes} FROM ${tables} WHERE lota_cod_lotacao = ${codigo_pai}`)
+
+            res.json(result)
+
+        } catch (err) {
+            res.status(500).json({ message: 'Erro connecting do database', err})
+        }
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+app.post('/lotacao/subordinados', async (req, res) =>
+{
+    const codigo_lotacao_pai = req.body.codigo_lotacao_pai
+
+    const attributes = "lota_cod_lotacao, lota_lota_cod_lotacao_pai, lota_dsc_lotacao, lota_sigla_lotacao"
+
+    const tables = `rh_lotacao`
+
+    const query = `SELECT ${attributes} FROM ${tables} WHERE lota_lota_cod_lotacao_pai = ${codigo_lotacao_pai} AND lota_dat_fim IS NULL`
+    
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
 // region pessoas
 
 //obs pessoas são todas as pessoas que têm vínculo com a Justiça Federal
 app.get('/pessoas', async (req, res) => {
     const query = `SELECT nome, cpf, matricula, cargo, uf FROM rh_relacao_pessoas ORDER BY nome`
+
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+app.get('/pessoas/ativas', async (req, res) => {
+    const query = `SELECT nu_matr_servidor, no_servidor, gru_fun_serv, cpf_servidor, flag_ativo FROM serv_pessoal WHERE flag_ativo = 1 ORDER BY no_servidor`
 
     try {
         const result = await connectToOracle(query)
