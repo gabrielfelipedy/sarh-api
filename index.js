@@ -2,7 +2,21 @@ const express = require('express')
 const oracledb = require('oracledb')
 const moment = require('moment')
 
-require('dotenv').config();
+const { format_date } = require('./format_date')
+const { connectToOracle } = require('./database/oracle')
+
+const {
+    getLotacao, 
+    getlotacaoByMatricula, 
+    getLotacaoPai, 
+    getLotacaoSubordinados,
+    getLotacaoServidores, 
+} = require('./controllers/lotacaoController')
+
+const { 
+    getServidores, 
+    getServidorByMatricula 
+} = require('./controllers/servidoresController')
 
 const app = express()
 const port = 3000
@@ -10,61 +24,17 @@ const port = 3000
 app.use(express.json())
 moment.locale('pt-br'); 
 
-oracledb.initOracleClient({ libDir: process.env.ORACLE_HOME });
-
-const oracleConfig = {
-    user: process.env.ORACLE_USER,
-    password: process.env.ORACLE_PASSWORD,
-    connectString: process.env.ORACLE_CONNECTION_STRING
-}
-
-async function connectToOracle(query)
-{
-    let connection
-    try
-    {   
-        connection = await oracledb.getConnection(oracleConfig)
-        const result = await connection.execute(query)
-        return result.rows
-    }
-    catch(err)
-    {
-        console.error(err)
-        throw err
-    }
-    finally
-    {
-        if(connection)
-        {
-            try
-            {
-                await connection.close()
-            }
-            catch(err)
-            {
-                console.error(err)
-            }
-        }
-    }
-}
-
 app.get('/', (req, res) => {
     res.send('Welcome to SARH API JS')
 })
 
-//region servidores
+//region SERVIDORES
 
 //obs servidores são apenas as pessoas que são servidores efetivos
 app.get('/servidores', async (req, res) => 
 {
-    const attributes = `FUNC_MATRICULA_FOLHA, FUNC_PESS_C_P_F, NO_SERVIDOR`
-
-    const tables = `rh_funcionario INNER JOIN serv_pessoal ON rh_funcionario.FUNC_MATRICULA_FOLHA = serv_pessoal.NU_MATR_SERVIDOR`
-
-    const query = `SELECT ${attributes} from ${tables} ORDER BY no_servidor`
-
     try {
-        const result = await connectToOracle(query)
+        const result = await getServidores()
         res.json(result)
     }
     catch(err)
@@ -73,18 +43,12 @@ app.get('/servidores', async (req, res) =>
     }
 })
 
-app.get('/servidor/:FUNC_MATRICULA_FOLHA', async (req, res) => 
+app.post('/servidores', async (req, res) => 
 {
-    const FUNC_MATRICULA_FOLHA = req.params.FUNC_MATRICULA_FOLHA
-
-    const attributes = `FUNC_MATRICULA_FOLHA, FUNC_PESS_C_P_F, NO_SERVIDOR`
-
-    const tables = `rh_funcionario INNER JOIN serv_pessoal ON rh_funcionario.FUNC_MATRICULA_FOLHA = serv_pessoal.NU_MATR_SERVIDOR`
-
-    const query = `SELECT ${attributes} from ${tables} WHERE func_matricula_folha = '${FUNC_MATRICULA_FOLHA}'`
+    const FUNC_MATRICULA_FOLHA = req.body.matricula
 
     try {
-        const result = await connectToOracle(query)
+        const result = await getServidorByMatricula(FUNC_MATRICULA_FOLHA)
         res.json(result)
     }
     catch(err)
@@ -92,22 +56,78 @@ app.get('/servidor/:FUNC_MATRICULA_FOLHA', async (req, res) =>
         res.status(500).json({ message: 'Erro connecting do database', err})
     }
 })
+
+//region SERV LOTAÇÃO
 
 app.get('/servidores/lotacao', async (req, res) =>
 {
-    const attributes = `func_matricula_folha, sg_lotacao, de_lotacao`
-
-    const tables = `rh_funcionario INNER JOIN lotacao ON rh_funcionario.func_lota_cod_lotacao = lotacao.co_lotacao`
-
-    const query = `SELECT ${attributes} FROM ${tables}`
-    
     try {
-        const result = await connectToOracle(query)
+        const result = await getLotacaoServidores()
         res.json(result)
     }
     catch(err)
     {
-        res.status(500).json({ message: 'Erro connecting do database', err})
+        res.status(500).json({ message: 'Erro em retornar a lotação de cada servidor', err})
+    }
+})
+
+app.post('/servidores/lotacao', async (req, res) =>
+{
+    const matricula = req.body.matricula;
+    
+    try {
+        const result = await getlotacaoByMatricula(matricula)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro em retornar a lotação de um servidor', err})
+    }
+})
+
+app.post('/servidores/chefe', async (req, res) =>
+{
+    const matricula = req.body.matricula;
+    
+    try {
+        const result = await getlotacaoByMatricula(matricula)
+        const codigo_lotacao = result[0][1]
+
+        try {
+            const result2 = await getLotacaoPai(codigo_lotacao)
+            res.json(result2)
+        }
+        catch(err)
+        {
+            res.status(500).json({ message: 'Erro em servidores/chefe', err})
+        }
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro em servidores/chefe', err})
+    }
+})
+
+app.post('/servidores/subordinados', async (req, res) =>
+{
+    const matricula = req.body.matricula;
+    
+    try {
+        const result = await getlotacaoByMatricula(matricula)
+        const codigo_lotacao = result[0][1]
+
+        try {
+            const result2 = await getLotacaoPai(codigo_lotacao)
+            res.json(result2)
+        }
+        catch(err)
+        {
+            res.status(500).json({ message: 'Erro em servidores/chefe', err})
+        }
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro em servidores/chefe', err})
     }
 })
 
@@ -165,10 +185,6 @@ app.get('/servidores/divisao', async (req, res) =>
         res.status(500).json({ message: 'Erro connecting do database', err})
     }
 })
-
-const format_date = (date) => {
-    return moment(date).format('MMMM Do YYYY, h:mm:ss a')
-}
 
 const format_ferias = (ferias) => {
     let retorno = ferias
@@ -276,20 +292,41 @@ app.post('/servidores/teletrabalho/', async (req, res) =>
     }
 })
 
+app.post('/servidores/afastamento/', async (req, res) =>
+{
+    const matricula = req.body.matricula
+
+    if(!matricula)
+        return []
+
+    matricula_formated = matricula.substring(2)
+
+    const attributes = "freq_dat_inicio, freq_dat_fim, freq_tipo, freq_observacao"
+
+    const tables = `rh_frequencia_especial`
+
+    const query = `SELECT ${attributes} FROM ${tables} WHERE freq_func_cod_funcionario = ${matricula_formated}`
+
+    //AND pfer_inicio_periodo BETWEEN ${data_inicio} AND ${data_fim}
+    
+    try {
+        const result = await connectToOracle(query)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
 //region LOTAÇÃO
 
 app.post('/lotacao/', async (req, res) =>
 {
     const codigo_lotacao = req.body.codigo_lotacao
 
-    const attributes = "lota_cod_lotacao, lota_lota_cod_lotacao_pai, lota_dsc_lotacao, lota_sigla_lotacao"
-
-    const tables = `rh_lotacao`
-
-    const query = `SELECT ${attributes} FROM ${tables} WHERE lota_cod_lotacao = ${codigo_lotacao}`
-    
     try {
-        const result = await connectToOracle(query)
+        const result = await getLotacao(codigo_lotacao)
         res.json(result)
     }
     catch(err)
@@ -302,26 +339,9 @@ app.post('/lotacao/pai', async (req, res) =>
 {
     const codigo_lotacao = req.body.codigo_lotacao
 
-    const attributes = "lota_cod_lotacao, lota_lota_cod_lotacao_pai, lota_dsc_lotacao, lota_sigla_lotacao"
-
-    const tables = `rh_lotacao`
-
-    const query = `SELECT ${attributes} FROM ${tables} WHERE lota_cod_lotacao = ${codigo_lotacao}`
-    
     try {
-        const temp_result = await connectToOracle(query)
-        
-        const codigo_pai = temp_result[0][1]
-        //console.log(codigo_pai)
-
-        try {
-            const result = await connectToOracle(`SELECT ${attributes} FROM ${tables} WHERE lota_cod_lotacao = ${codigo_pai}`)
-
-            res.json(result)
-
-        } catch (err) {
-            res.status(500).json({ message: 'Erro connecting do database', err})
-        }
+        const result = await getLotacaoPai(codigo_lotacao)
+        res.json(result)
     }
     catch(err)
     {
@@ -332,15 +352,9 @@ app.post('/lotacao/pai', async (req, res) =>
 app.post('/lotacao/subordinados', async (req, res) =>
 {
     const codigo_lotacao_pai = req.body.codigo_lotacao_pai
-
-    const attributes = "lota_cod_lotacao, lota_lota_cod_lotacao_pai, lota_dsc_lotacao, lota_sigla_lotacao"
-
-    const tables = `rh_lotacao`
-
-    const query = `SELECT ${attributes} FROM ${tables} WHERE lota_lota_cod_lotacao_pai = ${codigo_lotacao_pai} AND lota_dat_fim IS NULL`
     
     try {
-        const result = await connectToOracle(query)
+        const result = await getLotacaoSubordinados(codigo_lotacao_pai)
         res.json(result)
     }
     catch(err)
@@ -349,11 +363,16 @@ app.post('/lotacao/subordinados', async (req, res) =>
     }
 })
 
-// region pessoas
+// region PESSOAS
 
 //obs pessoas são todas as pessoas que têm vínculo com a Justiça Federal
-app.get('/pessoas', async (req, res) => {
-    const query = `SELECT nome, cpf, matricula, cargo, uf FROM rh_relacao_pessoas ORDER BY nome`
+app.get('/pessoas', async (req, res) =>
+{
+    const attributes = "nome, cpf, matricula, cargo, uf"
+
+    const tables = `rh_relacao_pessoas`
+
+    const query = `SELECT ${attributes} FROM ${tables}  ORDER BY nome`
 
     try {
         const result = await connectToOracle(query)
@@ -365,8 +384,13 @@ app.get('/pessoas', async (req, res) => {
     }
 })
 
-app.get('/pessoas/ativas', async (req, res) => {
-    const query = `SELECT nu_matr_servidor, no_servidor, gru_fun_serv, cpf_servidor, flag_ativo FROM serv_pessoal WHERE flag_ativo = 1 ORDER BY no_servidor`
+app.get('/pessoas/ativas', async (req, res) =>
+{
+    const attributes = "nu_matr_servidor, no_servidor, gru_fun_serv, cpf_servidor, flag_ativo"
+
+    const tables = `serv_pessoal`
+
+    const query = `SELECT ${attributes} FROM ${tables} WHERE flag_ativo = 1 ORDER BY no_servidor`
 
     try {
         const result = await connectToOracle(query)
@@ -399,9 +423,10 @@ app.get('/pessoas/:MATRICULA', async (req, res) => {
     }
 })
 
-//region pensionistas
+//region PENSIONISTAS
 
-app.get('/pensionistas', async (req, res) => {
+app.get('/pensionistas', async (req, res) =>
+{
     const query = `SELECT PCIV_NOME_PENSIONISTA from rh_pensao_civil`
 
     try {

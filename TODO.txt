@@ -1,8 +1,8 @@
 afastamento
 férias OK
 licenças OK
-teletrabalho
-listaEntSaiAntecipada
+teletrabalho OK
+listaEntSaiAntecipada  **************** TABELA VAZIA
 
 # OUTRAS DEMANDAS
 
