@@ -39,15 +39,13 @@ const getLotacaoServidores = async () =>
     }
 }
 
-const getlotacaoByMatricula = async (matricula) => {
-    
-    const matricula_formated = matricula.toUpperCase()
-
+const getlotacaoByMatricula = async (matricula) => 
+{
     const attributes = `func_matricula_folha, func_lota_cod_lotacao, sg_lotacao, de_lotacao`
 
     const tables = `rh_funcionario INNER JOIN lotacao ON rh_funcionario.func_lota_cod_lotacao = lotacao.co_lotacao`
 
-    const query = `SELECT ${attributes} FROM ${tables} WHERE func_matricula_folha = '${matricula_formated}'`
+    const query = `SELECT ${attributes} FROM ${tables} WHERE func_matricula_folha = '${matricula}'`
     
     try {
         const result = await connectToOracle(query)

@@ -23,13 +23,11 @@ const getServidores = async () =>
 
 const getServidorByMatricula = async (matricula) =>
 {
-    const FUNC_MATRICULA_FOLHA = matricula.toUpperCase()
-    
     const attributes = `FUNC_MATRICULA_FOLHA, FUNC_PESS_C_P_F, NO_SERVIDOR`
 
     const tables = `rh_funcionario INNER JOIN serv_pessoal ON rh_funcionario.FUNC_MATRICULA_FOLHA = serv_pessoal.NU_MATR_SERVIDOR`
 
-    const query = `SELECT ${attributes} from ${tables} WHERE func_matricula_folha = '${FUNC_MATRICULA_FOLHA}'`
+    const query = `SELECT ${attributes} from ${tables} WHERE func_matricula_folha = '${matricula}'`
 
     try {
         const result = await connectToOracle(query)

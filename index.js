@@ -5,6 +5,8 @@ const moment = require('moment')
 const { format_date } = require('./format_date')
 const { connectToOracle } = require('./database/oracle')
 
+//IMPORTAÇÃO DE MÓDULOS AUXILIARES DA API
+
 const {
     getLotacao, 
     getlotacaoByMatricula, 
@@ -17,6 +19,13 @@ const {
     getServidores, 
     getServidorByMatricula 
 } = require('./controllers/servidoresController')
+
+const { 
+    getCargo, 
+    getCargoByMatricula 
+} = require('./controllers/cargoController')
+
+//INÍCIO DA APLICAÇÃO
 
 const app = express()
 const port = 3000
@@ -45,7 +54,7 @@ app.get('/servidores', async (req, res) =>
 
 app.post('/servidores', async (req, res) => 
 {
-    const FUNC_MATRICULA_FOLHA = req.body.matricula
+    const FUNC_MATRICULA_FOLHA = req.body.matricula.toUpperCase()
 
     try {
         const result = await getServidorByMatricula(FUNC_MATRICULA_FOLHA)
@@ -53,7 +62,33 @@ app.post('/servidores', async (req, res) =>
     }
     catch(err)
     {
-        res.status(500).json({ message: 'Erro connecting do database', err})
+        res.status(500).json({ message: 'Erro ao consultar servidor por matrícula', err})
+    }
+})
+
+//regionn SERV CARGO
+
+app.post('/servidores/cargo', async (req, res) => 
+{
+    const matricula = req.body.matricula.toUpperCase()
+
+    try {
+        const result = await getCargoByMatricula(matricula)
+        const codigo_cargo = result[0][0]
+
+        try
+        {
+            const result2 = await getCargo(codigo_cargo)
+            res.json(result2)
+        }
+        catch(err)
+        {
+            res.status(500).json({ message: 'Erro retornando carro', err})
+        }
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro retornando carro', err})
     }
 })
 
@@ -73,7 +108,7 @@ app.get('/servidores/lotacao', async (req, res) =>
 
 app.post('/servidores/lotacao', async (req, res) =>
 {
-    const matricula = req.body.matricula;
+    const matricula = req.body.matricula.toUpperCase();
     
     try {
         const result = await getlotacaoByMatricula(matricula)
@@ -87,7 +122,7 @@ app.post('/servidores/lotacao', async (req, res) =>
 
 app.post('/servidores/chefe', async (req, res) =>
 {
-    const matricula = req.body.matricula;
+    const matricula = req.body.matricula.toUpperCase();
     
     try {
         const result = await getlotacaoByMatricula(matricula)
@@ -110,14 +145,15 @@ app.post('/servidores/chefe', async (req, res) =>
 
 app.post('/servidores/subordinados', async (req, res) =>
 {
-    const matricula = req.body.matricula;
+    const matricula = req.body.matricula.toUpperCase();
     
     try {
         const result = await getlotacaoByMatricula(matricula)
         const codigo_lotacao = result[0][1]
+        console.log(codigo_lotacao)
 
         try {
-            const result2 = await getLotacaoPai(codigo_lotacao)
+            const result2 = await getLotacaoSubordinados(codigo_lotacao)
             res.json(result2)
         }
         catch(err)
@@ -148,7 +184,6 @@ app.get('/servidores/situacao', async (req, res) =>
         res.status(500).json({ message: 'Erro connecting do database', err})
     }
 })
-    
 
 app.get('/servidores/inativos', async (req, res) =>
 {
@@ -363,6 +398,8 @@ app.post('/lotacao/subordinados', async (req, res) =>
     }
 })
 
+//region CARGO
+
 // region PESSOAS
 
 //obs pessoas são todas as pessoas que têm vínculo com a Justiça Federal
@@ -402,9 +439,9 @@ app.get('/pessoas/ativas', async (req, res) =>
     }
 })
 
-app.get('/pessoas/:MATRICULA', async (req, res) => {
-    
-    const MATRICULA = req.params.MATRICULA
+app.post('/pessoas', async (req, res) =>
+{
+    const MATRICULA = req.body.matricula.toUpperCase()
     // const TEST = 'AP574ES'
 
     const query = `SELECT * FROM rh_relacao_pessoas WHERE matricula = '${MATRICULA}'`
@@ -439,9 +476,9 @@ app.get('/pensionistas', async (req, res) =>
     }
 })
 
-app.get('/pensionistas/:PCIV_DEPE_COD_FUNCIONARIO', async (req, res) => 
+app.post('/pensionistas', async (req, res) => 
 {
-    const PCIV_DEPE_COD_FUNCIONARIO = req.params.PCIV_DEPE_COD_FUNCIONARIO
+    const PCIV_DEPE_COD_FUNCIONARIO = req.body.PCIV_DEPE_COD_FUNCIONARIO
 
     const query = `SELECT * from rh_pensao_civil WHERE PCIV_DEPE_COD_FUNCIONARIO = ${PCIV_DEPE_COD_FUNCIONARIO}`
 

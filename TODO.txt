@@ -11,6 +11,4 @@ VER CARGAS HORÁRIAS ESPECIAIS
 
 OBSERVAÇÕES
 
-Na tabela RH_RELACAO_PESSOAS está explicito a lotação de cada funcionário, mas alguns dados não parecem corretos
-
-TABELA LOTAÇÃO DESATUALIZADA
+Na tabela RH_RELACAO_PESSOAS MOSTRA LOTAÇÃO GERAL. DESATUALIZADA
