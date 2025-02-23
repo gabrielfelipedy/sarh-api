@@ -9,4 +9,4 @@ build:
     nodejs: "22"
 
 mkdocs:
-  configuration: docs/mkdocs.yml
+  configuration: mkdocs.yml
