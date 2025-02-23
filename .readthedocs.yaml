@@ -3,10 +3,10 @@ version: 2
 formats: all
 
 
-build:
-  os: ubuntu-22.04
-  tools:
-    nodejs: "22"
+# build:
+#   os: ubuntu-22.04
+#   tools:
+#     nodejs: "22"
 
 mkdocs:
   configuration: mkdocs.yml
