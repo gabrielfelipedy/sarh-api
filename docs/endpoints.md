@@ -1,15 +1,3 @@
-# DOCUMENTAÇÃO API SARH 
-
-# Sumário
-
-* [Lotação](https://github.com/gabrielfelipedy/sarh-api/blob/dev/docs/INDEX.md#lotação)
-* [Pessoas](https://github.com/gabrielfelipedy/sarh-api/blob/dev/docs/INDEX.md#pessoas)
-* [Servidores](https://github.com/gabrielfelipedy/sarh-api/blob/dev/docs/INDEX.md#servidores)
-* [Pensionistas](https://github.com/gabrielfelipedy/sarh-api/blob/dev/docs/INDEX.md#pensionistas)
-
-
-
-
 ## Lotação
 
 Aqui estão todo os endpoints relacionados às lotações internas da Justiça Federal do Amapá.

@@ -1,5 +1,4 @@
 const express = require('express')
-const oracledb = require('oracledb')
 const moment = require('moment')
 
 const { format_date } = require('./format_date')
