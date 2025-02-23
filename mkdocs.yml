@@ -1,4 +1,4 @@
-site_name: Documentação API SARH
+site_name: Documentação
 nav:
-  - Início: index.md
+  - Home: index.md
   - Endpoints: endpoints.md
