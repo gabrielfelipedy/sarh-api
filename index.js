@@ -1,5 +1,4 @@
 const express = require('express')
-const oracledb = require('oracledb')
 const moment = require('moment')
 
 const { format_date } = require('./format_date')
@@ -17,13 +16,19 @@ const {
 
 const { 
     getServidores, 
-    getServidorByMatricula 
+    getServidorByMatricula,
+    getServidoresByLotacao 
 } = require('./controllers/servidoresController')
 
 const { 
     getCargo, 
     getCargoByMatricula 
 } = require('./controllers/cargoController')
+
+const {
+    getFeriadosByAno,
+    getFeriadosByMes
+} = require('./controllers/feriadosController')
 
 //INÍCIO DA APLICAÇÃO
 
@@ -37,9 +42,71 @@ app.get('/', (req, res) => {
     res.send('Welcome to SARH API JS')
 })
 
+//region FERIADOS
+
+app.post('/feriados/anuais', async (req, res) =>
+{
+    const codigo_ano = req.body.codigo_ano
+
+    try {
+        const result = await getFeriadosByAno(codigo_ano)
+        
+        const new_result = []
+
+        result.forEach(date => {
+            date[1] = format_date(date[1])
+            new_result.push(date)
+        })
+
+        res.json(new_result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
+app.post('/feriados/mensais', async (req, res) =>
+{
+    const codigo_mes = req.body.codigo_mes
+    const codigo_ano = req.body.codigo_ano
+
+    try {
+        const result = await getFeriadosByMes(codigo_mes, codigo_ano)
+
+        const new_result = []
+
+        result.forEach(date => {
+            date[1] = format_date(date[1])
+            new_result.push(date)
+        })
+
+        res.json(new_result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
 //region SERVIDORES
 
 //obs servidores são apenas as pessoas que são servidores efetivos
+
+app.post('/servidores/bylotacao', async (req, res) =>
+{
+    const codigo_lotacao = req.body.codigo_lotacao
+
+    try {
+        const result = await getServidoresByLotacao(codigo_lotacao)
+        res.json(result)
+    }
+    catch(err)
+    {
+        res.status(500).json({ message: 'Erro connecting do database', err})
+    }
+})
+
 app.get('/servidores', async (req, res) => 
 {
     try {
@@ -66,7 +133,7 @@ app.post('/servidores', async (req, res) =>
     }
 })
 
-//regionn SERV CARGO
+//region SERV CARGO
 
 app.post('/servidores/cargo', async (req, res) => 
 {

@@ -2,6 +2,7 @@
 //RETORNAM INFORMAÇÕES RELACIONADOS A DADOS DE SERVIDORES
 
 const { connectToOracle } = require('../database/oracle')
+const { getlotacaoByMatricula } = require('./lotacaoController')
 
 const getServidores = async () =>
 {
@@ -39,7 +40,27 @@ const getServidorByMatricula = async (matricula) =>
     }
 }
 
+const getServidoresByLotacao = async (cod_lotacao) =>
+    {
+        const attributes = `FUNC_MATRICULA_FOLHA, FUNC_PESS_C_P_F, FUNC_LOTA_COD_LOTACAO`
+    
+        const tables = `rh_funcionario`
+    
+        const query = `SELECT ${attributes} from ${tables} WHERE FUNC_LOTA_COD_LOTACAO = '${cod_lotacao}'`
+    
+        try {
+            const result = await connectToOracle(query)
+            return result
+        }
+        catch(err)
+        {
+            throw new Error("Erro na consulta de servidor pela matrícula")
+        }
+    }
+
+
 module.exports = {
     getServidores,
-    getServidorByMatricula
+    getServidorByMatricula,
+    getServidoresByLotacao
 }
