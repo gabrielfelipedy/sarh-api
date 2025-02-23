@@ -1,4 +1,4 @@
 version: 2
-formats: [htmlzip, pdf]
+
 mkdocs:
   configuration: docs/mkdocs.yml
