@@ -2,4 +2,3 @@ site_name: Documentação API SARH
 nav:
   - Início: index.md
   - Endpoints: endpoints.md
-theme: readthedocs
