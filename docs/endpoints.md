@@ -7,13 +7,14 @@ Aqui estão todo os endpoints relacionados às lotações internas da Justiça F
 <div style="display: flex;">
 
 <div style="padding: 10px;">
-Obtém todas as informações relevantes sobre uma lotação, como a sua lotação pai e descrição breve da lotação
 
-<br><h4>URL</h4>
+Obtém todas as informações relevantes sobre uma lotação, como a sua lotação pai e descrição breve da lotação. </br>
+
+</br><h4>URL</h4>
 
 <span style="background-color:rgb(38, 87, 248); color: white; padding: 2px 10px; border-radius: 30px;">POST</span> <code>/lotacao</code>
 
-<br><h4>Body parameters</h4>
+</br><h4>Body parameters</h4>
 
 <code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
 
@@ -38,20 +39,11 @@ curl -X POST -d "codigo_lotacao=348" http://IP/lotacao
 ```
 
 </div>
-
 </div>
 
 
 
-## `/lotacao/pai`
 
-#### Método: `POST`
-
-#### Variável: `codigo_lotacao`
-
-#### Tipo: `number`
-
-Retorna o código da lotação pai e o nome da lotação, bem como a sua sigla.
 
 ## `/lotacao/subordinados`
 
