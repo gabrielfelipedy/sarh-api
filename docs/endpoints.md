@@ -4,7 +4,9 @@ Aqui estão todo os endpoints relacionados às lotações internas da Justiça F
 
 ## Obter informações de uma lotação
 
+<div style="display: flex;">
 
+<div style="padding: 10px;">
 Obtém todas as informações relevantes sobre uma lotação, como a sua lotação pai e descrição breve da lotação
 
 ## Endpoint:
@@ -13,13 +15,20 @@ Obtém todas as informações relevantes sobre uma lotação, como a sua lotaç�
 
 ## Body parameters:
 
-`codigo_lotacao` <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
+`codigo_lotacao` 
 
+<span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
+
+</div>
+
+<div style="padding: 10px;">
 
 ## Exemplo de requisição:
 
 
-<span style="background-color:rgb(38, 87, 248); color: white; padding: 2px 10px; border-radius: 30px;">POST</span> `/lotacao`
+<span style="background-color:rgb(38, 87, 248); color: white; padding: 5px 10px; border-radius: 30px;">POST</span> 
+
+`/lotacao`
 
 
 ```nginx
@@ -34,6 +43,11 @@ curl -X POST -d "codigo_lotacao=348" http://{ip}/lotacao
     "descrição_lotacao": "NÚCLEO DE TECNOLOGIA DA INFORMAÇÃO"
 }
 ```
+
+</div>
+
+</div>
+
 
 
 ## `/lotacao/pai`
