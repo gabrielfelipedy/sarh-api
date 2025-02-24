@@ -8,14 +8,14 @@ Aqui estão todo os endpoints relacionados às lotações internas da Justiça F
 
 <div style="padding: 10px;">
 
-Obtém todas as informações relevantes sobre uma lotação, como a sua lotação pai e descrição breve da lotação.</br>
+Obtém todas as informações relevantes sobre uma lotação, como a sua lotação pai e descrição breve da lotação.
 
 
-<h4>Body parameter</h4>
+<h4 style="margin-top: 50px">Body parameter</h4>
 
-<code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span></br>
+<code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
 
-<p>Representa o código da lotação guardado no banco de dados SARH</p></br>
+<p style="margin-top: 50px">Representa o código da lotação guardado no banco de dados SARH</p>
 
 </div>
 <div style="padding: 10px;">
