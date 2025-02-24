@@ -9,11 +9,11 @@ Aqui estão todo os endpoints relacionados às lotações internas da Justiça F
 <div style="flex: 1; padding: 10px;">
 Obtém todas as informações relevantes sobre uma lotação, como a sua lotação pai e descrição breve da lotação
 
-### Endpoint:
+## Endpoint:
 
 `POST` `/lotacao`
 
-### Body parameters:
+## Body parameters:
 
 `codigo_lotacao` 
 
@@ -23,7 +23,7 @@ Obtém todas as informações relevantes sobre uma lotação, como a sua lotaç�
 
 <div style="flex: 1; padding: 10px;">
 
-### Exemplo de requisição:
+## Exemplo de requisição:
 
 
 <span style="background-color:rgb(38, 87, 248); color: white; padding: 5px 10px; border-radius: 30px;">POST</span> 
@@ -35,7 +35,7 @@ Obtém todas as informações relevantes sobre uma lotação, como a sua lotaç�
 curl -X POST -d "codigo_lotacao=348" http://{ip}/lotacao
 ``` 
 
-### Exemplo de resposta:
+## Exemplo de resposta:
 
 ```json
 {
