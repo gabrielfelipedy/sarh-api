@@ -10,16 +10,15 @@ Aqui estão todo os endpoints relacionados às lotações internas da Justiça F
 
 Obtém todas as informações relevantes sobre uma lotação, como a sua lotação pai e descrição breve da lotação. </br>
 
-</br><h4>URL</h4>
+<h4>URL</h4>
 
-<span style="background-color:rgb(38, 87, 248); color: white; padding: 2px 10px; border-radius: 30px;">POST</span> <code>/lotacao</code>
+<span style="background-color:rgb(38, 87, 248); color: white; padding: 2px 10px; border-radius: 30px;">POST</span> <code>/lotacao</code></br>
 
-</br><h4>Body parameters</h4>
+<h4>Body parameters</h4>
 
-<code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
+<code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span></br>
 
 </div>
-
 <div style="padding: 10px;">
 
 <h4>Exemplo de requisição</h4>
