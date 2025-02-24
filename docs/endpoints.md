@@ -15,9 +15,7 @@ Obtém todas as informações relevantes sobre uma lotação, como a sua lotaç�
 
 ## Body parameters:
 
-`codigo_lotacao` 
-
-<span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
+<code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
 
 </div>
 
