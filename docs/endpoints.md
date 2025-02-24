@@ -13,7 +13,7 @@ Obtém todas as informações relevantes sobre uma lotação, como a sua lotaç�
 
 <h4>Body parameter</h4>
 
-<code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
+<code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span></br>
 
 <p>Representa o código da lotação guardado no banco de dados SARH</p></br>
 
