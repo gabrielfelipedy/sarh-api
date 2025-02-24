@@ -85,15 +85,46 @@ curl -X POST -d "codigo_lotacao=348" http://IP/lotacao
 <!--  Próximo endpoint -->
 
 
-## `/lotacao/subordinados`
+## Obter lotações subordinadas a uma lotação
 
-#### Método: `POST`
+<div style="display: flex;">
 
-#### Variável: `codigo_lotacao`
+<div style="padding: 10px;">
 
-#### Tipo: `number`
+Obtém todas as lotações que são subordinadas à lotação informada
 
-Retorna uma lista com todos os códigos, nomes e siglas de todas as lotações subordinadas.
+
+<h4 style="margin-top: 30px">Body parameter</h4>
+
+<code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
+
+<p style="margin-top: 30px">Representa o código da lotação guardado no banco de dados SARH</p>
+
+</div>
+<div style="padding: 10px;">
+
+<h4>Exemplo de requisição</h4>
+
+<span style="background-color:rgb(38, 87, 248); color: white; padding: 2px 10px; border-radius: 30px;">POST</span> <code>/lotacao/subordinadas</code></br>
+
+```nginx
+curl -X POST -d "codigo_lotacao=348" http://IP/lotacao
+``` 
+
+<h4>Exemplo de resposta</h4>
+
+```json
+{
+    "codigo_lotacao": 468,
+    "descrição_lotacao": "SETOR DE SISTEMAS E SUPORTE AO USUÁRIO"
+}
+```
+
+</div>
+</div>
+
+
+
 
 ## Pessoas
 
