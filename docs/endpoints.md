@@ -9,8 +9,11 @@ Aqui estão todo os endpoints relacionados às lotações internas da Justiça F
 <div style="padding: 10px;">
 Obtém todas as informações relevantes sobre uma lotação, como a sua lotação pai e descrição breve da lotação
 
+<br><h4>URL</h4>
 
-<h3>Body parameters:</h3>
+<span style="background-color:rgb(38, 87, 248); color: white; padding: 2px 10px; border-radius: 30px;">POST</span> <code>/lotacao</code>
+
+<br><h4>Body parameters</h4>
 
 <code>codigo_lotacao</code> <span style="color:grey; padding: 0 10px;">number</span> <span style="color:orange; padding: 0 10px;">obrigatório</span>
 
@@ -18,17 +21,14 @@ Obtém todas as informações relevantes sobre uma lotação, como a sua lotaç�
 
 <div style="padding: 10px;">
 
-<h3>Exemplo de requisição:</h3>
-
-
-<span style="background-color:rgb(38, 87, 248); color: white; padding: 2px 10px; border-radius: 30px;">POST</span> <code>codigo_lotacao</code>
+<h4>Exemplo de requisição</h4>
 
 
 ```nginx
-curl -X POST -d "codigo_lotacao=348" http://{ip}/lotacao
+curl -X POST -d "codigo_lotacao=348" http://IP/lotacao
 ``` 
 
-<h3>Exemplo de resposta:</h3>
+<h4>Exemplo de resposta</h4>
 
 ```json
 {
