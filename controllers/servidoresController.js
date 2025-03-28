@@ -24,9 +24,9 @@ const getServidores = async () =>
 
 const getServidorByMatricula = async (matricula) =>
 {
-    const attributes = `FUNC_MATRICULA_FOLHA, FUNC_PESS_C_P_F, NO_SERVIDOR`
+    const attributes = `FUNC_MATRICULA_FOLHA, FUNC_PESS_C_P_F, NO_SERVIDOR, CARG_DSC_CARGO, CARG_JORNADA_TRABALHO`
 
-    const tables = `rh_funcionario INNER JOIN serv_pessoal ON rh_funcionario.FUNC_MATRICULA_FOLHA = serv_pessoal.NU_MATR_SERVIDOR`
+    const tables = `rh_funcionario INNER JOIN serv_pessoal ON rh_funcionario.FUNC_MATRICULA_FOLHA = serv_pessoal.NU_MATR_SERVIDOR INNER JOIN rh_cargo ON rh_funcionario.FUNC_CARG_COD_CARGO = rh_cargo.CARG_COD_CARGO`
 
     const query = `SELECT ${attributes} from ${tables} WHERE func_matricula_folha = '${matricula}'`
 
