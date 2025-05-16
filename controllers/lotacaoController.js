@@ -3,68 +3,61 @@
 
 const { connectToOracle } = require('../database/oracle')
 
-const getLotacao = async (codigo_lotacao) =>
-{
+const getLotacao = async (codigo_lotacao) => {
     const attributes = "lota_cod_lotacao, lota_lota_cod_lotacao_pai, lota_dsc_lotacao, lota_sigla_lotacao"
 
     const tables = `rh_lotacao`
 
     const query = `SELECT ${attributes} FROM ${tables} WHERE lota_cod_lotacao = ${codigo_lotacao}`
-    
+
     try {
         const result = await connectToOracle(query)
         return result
     }
-    catch(err)
-    {
+    catch (err) {
         throw new Error("Erro na consulta de lotação")
     }
 }
 
-const getLotacaoServidores = async () =>
-{
+const getLotacaoServidores = async () => {
     const attributes = `func_matricula_folha, sg_lotacao, de_lotacao`
 
     const tables = `rh_funcionario INNER JOIN lotacao ON rh_funcionario.func_lota_cod_lotacao = lotacao.co_lotacao`
 
     const query = `SELECT ${attributes} FROM ${tables}`
-    
+
     try {
         const result = await connectToOracle(query)
         return result
     }
-    catch(err)
-    {
+    catch (err) {
         throw new Error("Erro na consulta de lotação de todos os servidores")
     }
 }
 
-const getlotacaoByMatricula = async (matricula) => 
-{
+const getlotacaoByMatricula = async (matricula) => {
     const attributes = `func_matricula_folha, func_lota_cod_lotacao, sg_lotacao, de_lotacao`
 
     const tables = `rh_funcionario INNER JOIN lotacao ON rh_funcionario.func_lota_cod_lotacao = lotacao.co_lotacao`
 
     const query = `SELECT ${attributes} FROM ${tables} WHERE func_matricula_folha = '${matricula}'`
-    
+
     try {
         const result = await connectToOracle(query)
         return result
     }
-    catch(err)
-    {
+    catch (err) {
         throw new Error("Erro na consulta de lotação por matrícula")
     }
 }
 
-const getLotacaoPai = async (codigo_lotacao) =>
-{
+const getLotacaoPai = async (codigo_lotacao) => {
     const attributes = "lota_cod_lotacao, lota_lota_cod_lotacao_pai, lota_dsc_lotacao, lota_sigla_lotacao"
 
     const tables = `rh_lotacao`
 
     const query = `SELECT ${attributes} FROM ${tables} WHERE lota_cod_lotacao = ${codigo_lotacao}`
-    
+
     try {
         const temp_result = await connectToOracle(query)
         const codigo_pai = temp_result[0][1]
@@ -80,34 +73,49 @@ const getLotacaoPai = async (codigo_lotacao) =>
             throw new Error('Erro na consulta da lotação pai');
         }
     }
-    catch(err)
-    {
+    catch (err) {
         throw new Error('Erro na consulta da lotação pai');
     }
 }
 
-const getLotacaoSubordinados = async (codigo_lotacao_pai) =>
-{
+const getLotacaoSubordinados = async (codigo_lotacao_pai) => {
     const attributes = "lota_cod_lotacao, lota_dsc_lotacao, lota_sigla_lotacao"
 
     const tables = `rh_lotacao`
 
     const query = `SELECT ${attributes} FROM ${tables} WHERE lota_lota_cod_lotacao_pai = ${codigo_lotacao_pai} AND lota_dat_fim IS NULL`
-    
+
     try {
         const result = await connectToOracle(query)
         return result
     }
-    catch(err)
-    {
-        res.status(500).json({ message: 'Erro connecting do database', err})
+    catch (err) {
+        res.status(500).json({ message: 'Erro connecting do database', err })
     }
 }
+
+const getLotacaoSubordinadosRecursivo = async (codigo_lotacao_pai) => {
+    const attributes = "lota_cod_lotacao, LOTA_LOTA_COD_LOTACAO_PAI, LOTA_DSC_LOTACAO, LOTA_SIGLA_LOTACAO"
+
+    const tables = `rh_lotacao`
+
+    const query = `SELECT ${attributes} FROM ${tables} start with LOTA_COD_LOTACAO = ${codigo_lotacao_pai} connect by prior lota_cod_lotacao = LOTA_LOTA_COD_LOTACAO_PAI AND lota_dat_fim IS NULL`
+
+    try {
+        const result = await connectToOracle(query)
+        return result
+    }
+    catch (err) {
+        res.status(500).json({ message: 'Erro connecting do database', err })
+    }
+}
+
 
 module.exports = {
     getLotacao,
     getLotacaoServidores,
     getlotacaoByMatricula,
     getLotacaoPai,
-    getLotacaoSubordinados
+    getLotacaoSubordinados,
+    getLotacaoSubordinadosRecursivo
 }

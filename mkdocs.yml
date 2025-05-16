@@ -1,0 +1,6 @@
+site_name: Documentação API SARH
+nav:
+  - Home: index.md
+  - Endpoints: 
+    - Lotações: endpoints/lotacoes.md
+theme: readthedocs

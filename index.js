@@ -11,6 +11,7 @@ const {
     getlotacaoByMatricula, 
     getLotacaoPai, 
     getLotacaoSubordinados,
+    getLotacaoSubordinadosRecursivo,
     getLotacaoServidores, 
 } = require('./controllers/lotacaoController')
 
@@ -26,9 +27,18 @@ const {
 } = require('./controllers/cargoController')
 
 const {
+    getFeriasServidor
+} = require('./controllers/feriasController')
+
+const {
+    getLicencasServidor
+} = require('./controllers/licencasController')
+
+const {
     getFeriadosByAno,
     getFeriadosByMes
 } = require('./controllers/feriadosController')
+const { buildTreeView } = require('./lib/treeView')
 
 //INÍCIO DA APLICAÇÃO
 
@@ -288,17 +298,6 @@ app.get('/servidores/divisao', async (req, res) =>
     }
 })
 
-const format_ferias = (ferias) => {
-    let retorno = ferias
-
-    retorno.forEach(feria => {
-        feria[1] = format_date(feria[1])
-        feria[3] = format_date(feria[3])
-    });
-
-    return retorno
-}
-
 app.post('/servidores/ferias/', async (req, res) =>
 {
     const matricula = req.body.matricula
@@ -309,28 +308,26 @@ app.post('/servidores/ferias/', async (req, res) =>
         return []
 
     matricula_formated = matricula.substring(2)
-
-    const attributes = "pfer_feri_cod_funcionario, pfer_inicio_periodo, pfer_dias_gozados, pfer_fim_periodo, pfer_data_interrup_suspensao, pfer_flag_ocorrencia" //flag = 7 - suspensas, 1 - marcadas, 2- gozadas, 5 - interrompdias / remarcadas
-
-    const tables = `rh_periodo_ferias`
-
-    const query = `SELECT ${attributes} FROM ${tables} WHERE pfer_feri_cod_funcionario = ${matricula_formated} AND pfer_flag_ocorrencia IN (1, 2, 5, 7) AND ((pfer_inicio_periodo BETWEEN '${data_inicio}' AND '${data_fim}') OR (pfer_fim_periodo BETWEEN '${data_inicio}' AND '${data_fim}'))`
-
-    //AND pfer_inicio_periodo BETWEEN ${data_inicio} AND ${data_fim}
     
     try {
-        const result = await connectToOracle(query)
+        const result = await getFeriasServidor(matricula_formated, data_inicio, data_fim)
+        
+        const new_result = []
 
-        // console.log(result[0][1])
-        // console.log(data_inicio)
+        result.forEach(date => {
+            date[1] = format_date(date[1])
+            date[2] = format_date(date[2])
+            new_result.push(date)
+        })
 
-        res.json(result)
+        res.json(new_result)
     }
     catch(err)
     {
         res.status(500).json({ message: 'Erro connecting do database', err})
     }
 })
+
 
 app.post('/servidores/licencas/', async (req, res) =>
 {
@@ -342,28 +339,27 @@ app.post('/servidores/licencas/', async (req, res) =>
         return []
 
     matricula_formated = matricula.substring(2)
-
-    const attributes = "plic_lice_cod_funcionario, plic_inicio_periodo, plic_fim_periodo, lice_num_processo, tiaf_dsc_tipo_afas"
-
-    const tables = `rh_periodo_licenca INNER JOIN rh_licenca ON lice_cod_licenca = plic_lice_cod_licenca INNER JOIN rh_tipo_afastamento ON tiaf_cod_tipo_afas = lice_tiaf_cod_tipo_afas`
-
-    const query = `SELECT ${attributes} FROM ${tables} WHERE plic_lice_cod_funcionario = ${matricula_formated} AND lice_func_cod_funcionario = ${matricula_formated}  AND ((plic_inicio_periodo BETWEEN '${data_inicio}' AND '${data_fim}') OR (plic_fim_periodo BETWEEN '${data_inicio}' AND '${data_fim}'))`
-
-    //AND pfer_inicio_periodo BETWEEN ${data_inicio} AND ${data_fim}
-    
+ 
     try {
-        const result = await connectToOracle(query)
+        const result = await getLicencasServidor(matricula, data_inicio, data_fim)
 
-        // console.log(result[0][1])
-        // console.log(data_inicio)
+        const new_result = []
 
-        res.json(result)
+        result.forEach(date => {
+            date[1] = format_date(date[1])
+            date[2] = format_date(date[2])
+            new_result.push(date)
+        })
+
+        res.json(new_result)
     }
     catch(err)
     {
         res.status(500).json({ message: 'Erro connecting do database', err})
     }
 })
+
+
 
 app.post('/servidores/teletrabalho/', async (req, res) =>
 {
@@ -465,6 +461,21 @@ app.post('/lotacao/subordinados', async (req, res) =>
     }
 })
 
+app.post('/lotacao/subordinados/recursivo', async (req, res) =>
+    {
+        const codigo_lotacao_pai = req.body.codigo_lotacao_pai
+        
+        try {
+            const result = await getLotacaoSubordinadosRecursivo(codigo_lotacao_pai)
+            console.log(result)
+            res.json(buildTreeView(result, codigo_lotacao_pai))
+        }
+        catch(err)
+        {
+            res.status(500).json({ message: 'Erro connecting do database', err})
+        }
+    })
+
 //region CARGO
 
 // region PESSOAS
@@ -563,6 +574,6 @@ app.post('/pensionistas', async (req, res) =>
     }
 })
 
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
     console.log(`Server is now running on http://localhost:${port}`)
 })
