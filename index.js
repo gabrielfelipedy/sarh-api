@@ -11,6 +11,7 @@ const {
     getlotacaoByMatricula, 
     getLotacaoPai, 
     getLotacaoSubordinados,
+    getLotacaoSubordinadosRecursivo,
     getLotacaoServidores, 
 } = require('./controllers/lotacaoController')
 
@@ -37,6 +38,7 @@ const {
     getFeriadosByAno,
     getFeriadosByMes
 } = require('./controllers/feriadosController')
+const { buildTreeView } = require('./lib/treeView')
 
 //INÍCIO DA APLICAÇÃO
 
@@ -458,6 +460,21 @@ app.post('/lotacao/subordinados', async (req, res) =>
         res.status(500).json({ message: 'Erro connecting do database', err})
     }
 })
+
+app.post('/lotacao/subordinados/recursivo', async (req, res) =>
+    {
+        const codigo_lotacao_pai = req.body.codigo_lotacao_pai
+        
+        try {
+            const result = await getLotacaoSubordinadosRecursivo(codigo_lotacao_pai)
+            console.log(result)
+            res.json(buildTreeView(result, codigo_lotacao_pai))
+        }
+        catch(err)
+        {
+            res.status(500).json({ message: 'Erro connecting do database', err})
+        }
+    })
 
 //region CARGO
 
